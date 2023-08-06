@@ -195,6 +195,26 @@ NFA zero_or_one(NFA nfa) {
   return NFA{start, end};
 }
 
+// a+ : one or more
+NFA one_or_more(NFA nfa) {
+  auto start = create_state(false);
+  auto end = create_state(true);
+
+  // eps from start to nfa.start
+  add_epsilon_transition(start, nfa.start);
+
+  // eps from nfa.end to end
+  add_epsilon_transition(nfa.end, end);
+
+  // set nfa.end.is_end to false
+  nfa.end->is_end = false;
+
+  // eps from end to nfa.start
+  add_epsilon_transition(end, nfa.start);
+
+  return NFA{start, end};
+}
+
 NFA to_nfa(std::string post_fix_expr) {
   if (post_fix_expr.empty()) {
     return from_epsilon();
