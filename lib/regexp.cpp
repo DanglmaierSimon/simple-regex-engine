@@ -171,6 +171,24 @@ NFA nfa_closure(NFA nfa) {
 
   return NFA{start, end};
 }
+NFA zero_or_one(NFA nfa) {
+  auto start = create_state(false);
+  auto end = create_state(true);
+
+  // eps transition from start to end
+  add_epsilon_transition(start, end);
+
+  // eps transition from start to nfa.start
+  add_epsilon_transition(start, nfa.start);
+
+  // eps transistion from nfa.end to end
+  add_epsilon_transition(nfa.end, end);
+
+  // set nfa.end.is_end to false
+  nfa.end->is_end = false;
+
+  return NFA{start, end};
+}
 
 NFA to_nfa(std::string post_fix_expr) {
   if (post_fix_expr.empty()) {
@@ -204,6 +222,13 @@ NFA to_nfa(std::string post_fix_expr) {
       auto left = stack.top();
       stack.pop();
       stack.push(nfa_concat(left, right));
+      break;
+    }
+    case '?': {
+      assert(!stack.empty());
+      auto top = stack.top();
+      stack.pop();
+      stack.push(zero_or_one(top));
       break;
     }
     default: {
