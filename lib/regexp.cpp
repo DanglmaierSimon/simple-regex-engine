@@ -138,12 +138,14 @@ NFA from_symbol(char symbol) {
   return NFA{start, end};
 }
 
+// ab : a and b
 NFA nfa_concat(NFA first, NFA second) {
   add_epsilon_transition(first.end, second.start);
   first.end->is_end = false;
   return NFA{first.start, second.end};
 }
 
+// a|b : a or b
 NFA nfa_union(NFA first, NFA second) {
   auto start = create_state(false);
   add_epsilon_transition(start, first.start);
@@ -158,6 +160,7 @@ NFA nfa_union(NFA first, NFA second) {
   return NFA{start, end};
 }
 
+// a* : one or more
 NFA nfa_closure(NFA nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
@@ -171,6 +174,8 @@ NFA nfa_closure(NFA nfa) {
 
   return NFA{start, end};
 }
+
+// a? : zero or one
 NFA zero_or_one(NFA nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
@@ -375,6 +380,8 @@ std::function<bool(std::string)> create_matcher(const std::string &regexp) {
 
   const auto post_fix_expr = to_postfix(with_concat);
   const auto nfa = to_nfa(post_fix_expr);
+
+  print(nfa);
 
   return [nfa](const std::string &word) { return search(nfa, word); };
 }
