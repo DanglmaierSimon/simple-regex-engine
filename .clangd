@@ -1,0 +1,9 @@
+If:
+  PathMatch: .*\.hpp
+CompileFlags:
+  Add: -Wno-unused-function
+---
+Diagnostics:
+  ClangTidy:
+    Add: "clang-analyzer*;bugprone*;misc*;modernize*;performance*"
+    Remove: "readability*"

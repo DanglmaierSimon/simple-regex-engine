@@ -1,0 +1,9 @@
+{
+    "C_Cpp.intelliSenseEngine": "Disabled",
+        
+    "clangd.path": "/usr/bin/clangd-13",
+    "clangd.arguments": ["-log=verbose", 
+                         "-pretty", 
+                         "--background-index", 
+                         "--compile-commands-dir=."]
+}
