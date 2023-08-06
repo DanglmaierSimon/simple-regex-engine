@@ -180,13 +180,13 @@ NFA zero_or_one(NFA nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
 
-  // eps transition from start to end
+  // eps from start to end
   add_epsilon_transition(start, end);
 
-  // eps transition from start to nfa.start
+  // eps from start to nfa.start
   add_epsilon_transition(start, nfa.start);
 
-  // eps transistion from nfa.end to end
+  // eps from nfa.end to end
   add_epsilon_transition(nfa.end, end);
 
   // set nfa.end.is_end to false
