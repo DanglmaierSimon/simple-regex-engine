@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/simon/playground/regex-engine/complex/regexp.cpp
+algorithm
+-
+cassert
+-
+iostream
+-
+iterator
+-
+memory
+-
+stack
+-
+string
+-
+unordered_map
+-
+vector
+-
+

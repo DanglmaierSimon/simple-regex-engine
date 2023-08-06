@@ -1,0 +1,32 @@
+@startuml test
+hide empty description
+[*] --> State2
+' visiting state 2
+
+State2 -> State3 : eps
+State2 -> State0 : eps
+
+' visiting state 3
+
+State3 -> State4 : eps
+
+' visiting state 4
+
+
+State4 -> State5 : b
+' visiting state 5
+
+
+' visiting state 0
+
+
+State0 -> State1 : a
+' visiting state 1
+
+State1 -> State3 : eps
+State1 -> State0 : eps
+
+' visiting state 3
+' visiting state 0
+State5 --> [*]
+@enduml
