@@ -13,8 +13,6 @@
 
 using namespace std;
 
-
-
 static int global_id;
 
 struct State {
