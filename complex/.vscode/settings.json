@@ -1,4 +1,0 @@
-{
-    "clangd.onConfigChanged": "restart",
-    "cmake.configureOnOpen": true
-}

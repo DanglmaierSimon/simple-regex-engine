@@ -1,9 +1,12 @@
 {
-    "C_Cpp.intelliSenseEngine": "Disabled",
-        
+    "C_Cpp.intelliSenseEngine": "disabled",
     "clangd.path": "/usr/bin/clangd-13",
-    "clangd.arguments": ["-log=verbose", 
-                         "-pretty", 
-                         "--background-index", 
-                         "--compile-commands-dir=."]
+    "clangd.arguments": [
+        "-log=verbose",
+        "-pretty",
+        "--background-index",
+        "--compile-commands-dir=."
+    ],
+    "clangd.onConfigChanged": "restart",
+    "cmake.configureOnOpen": true
 }
