@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "regexp.h"
+#include "lib/regexp.h"
 
 using namespace std;
 
