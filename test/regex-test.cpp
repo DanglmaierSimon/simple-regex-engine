@@ -25,9 +25,9 @@ INSTANTIATE_TEST_SUITE_P(
                     std::pair<std::string, std::string>{"a?", "a"},
                     std::pair<std::string, std::string>{"a?", ""},
 
-                    // std::pair<std::string, std::string>{"a+", "a"},
-                    // std::pair<std::string, std::string>{"a+", "aa"},
-                    // std::pair<std::string, std::string>{"a+", "aaaaa"},
+                    std::pair<std::string, std::string>{"a+", "a"},
+                    std::pair<std::string, std::string>{"a+", "aa"},
+                    std::pair<std::string, std::string>{"a+", "aaaaa"},
 
                     std::pair<std::string, std::string>{"a*b", "ab"},
                     std::pair<std::string, std::string>{"a*b", "aaaaaaaaab"},
