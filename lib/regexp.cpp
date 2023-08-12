@@ -200,19 +200,25 @@ NFA one_or_more(NFA nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
 
+  assert(nfa.end->is_end);
+
   // eps from start to nfa.start
   add_epsilon_transition(start, nfa.start);
-
-  // eps from nfa.end to end
-  add_epsilon_transition(nfa.end, end);
 
   // set nfa.end.is_end to false
   nfa.end->is_end = false;
 
-  // eps from end to nfa.start
-  add_epsilon_transition(end, nfa.start);
+  // eps from nfa.end to end
+  add_epsilon_transition(nfa.end, end);
 
-  return NFA{start, end};
+  // eps from end to nfa.start
+  add_epsilon_transition(nfa.end, nfa.start);
+
+  auto new_ = NFA{start, end};
+
+  assert(!new_.start->is_end);
+  assert(new_.end->is_end);
+  return new_;
 }
 
 NFA to_nfa(std::string post_fix_expr) {
@@ -256,6 +262,13 @@ NFA to_nfa(std::string post_fix_expr) {
       stack.push(zero_or_one(top));
       break;
     }
+    case '+': {
+      assert(!stack.empty());
+      auto top = stack.top();
+      stack.pop();
+      stack.push(one_or_more(top));
+      break;
+    }
     default: {
       stack.push(from_symbol(token));
     }
@@ -268,7 +281,7 @@ NFA to_nfa(std::string post_fix_expr) {
 
 void add_next_state(const std::shared_ptr<State> &state,
                     std::vector<std::shared_ptr<State>> &next_states,
-                    std::vector<std::shared_ptr<State>> &visited) {
+                    std::vector<std::shared_ptr<State>> visited) {
 
   assert(state != nullptr);
 
@@ -290,8 +303,7 @@ void add_next_state(const std::shared_ptr<State> &state,
 
 bool search(const NFA &nfa, const std::string &word) {
   std::vector<std::shared_ptr<State>> current_states;
-  std::vector<std::shared_ptr<State>> visited;
-  add_next_state(nfa.start, current_states, visited);
+  add_next_state(nfa.start, current_states, {});
 
   for (auto symbol : word) {
     std::vector<std::shared_ptr<State>> next_states;
@@ -300,8 +312,7 @@ bool search(const NFA &nfa, const std::string &word) {
       auto next_state = state->transitions[symbol];
 
       if (next_state != nullptr) {
-        std::vector<std::shared_ptr<State>> dummy;
-        add_next_state(next_state, next_states, dummy);
+        add_next_state(next_state, next_states, {});
       }
     }
 
