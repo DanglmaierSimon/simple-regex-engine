@@ -5,5 +5,13 @@ CompileFlags:
 ---
 Diagnostics:
   ClangTidy:
-    Add: "clang-analyzer*;bugprone*;misc*;modernize*;performance*"
-    Remove: "readability*"
+    Add: 
+      - cppcoreguidelines*
+      - misc*
+      - performance*
+      - readability*
+      - bugprone*
+    Remove:
+      - readability*
+      - cppcoreguidelines-pro-bounds-array-to-pointer-decay
+      - misc-no-recursion
