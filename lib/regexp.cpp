@@ -11,122 +11,38 @@
 #include <unordered_map>
 #include <vector>
 
+#include "state.h"
+
 using namespace std;
-
-static int global_id;
-
-struct State {
-  int id;
-  bool is_end;
-  std::unordered_map<char, std::shared_ptr<State>> transitions;
-  std::vector<std::shared_ptr<State>> epsilon_transitions;
-};
 
 struct NFA {
   std::shared_ptr<State> start;
   std::shared_ptr<State> end;
 };
 
-std::string
-to_string(const std::shared_ptr<State> &from_state,
-          const std::vector<std::shared_ptr<State>> &epsilon_tranisitions) {
-  std::string out;
-
-  for (const auto &t : epsilon_tranisitions) {
-    out += "\n";
-    out += ("State" + std::to_string(from_state->id));
-    out += " -> ";
-    out += ("State" + std::to_string(t->id));
-    out += " : ";
-    out += "eps";
-  }
-
-  return out;
-}
-
-std::string
-to_string(const std::shared_ptr<State> &from_state,
-          const std::unordered_map<char, std::shared_ptr<State>> &transitions) {
-  std::string out;
-
-  for (const auto &kv : transitions) {
-    out += "\n";
-    out += ("State" + std::to_string(from_state->id));
-    out += " -> ";
-    out += ("State" + std::to_string(kv.second->id));
-    out += " : ";
-    out += kv.first;
-  }
-
-  return out;
-}
-
-void print(const std::shared_ptr<State> &state, std::vector<int> &seen_states) {
-  if (cend(seen_states) !=
-      std::find_if(cbegin(seen_states), cend(seen_states),
-                   [&state](auto id) { return state->id == id; })) {
-    return;
-  }
-
-  // cout << "State" << to_string(state->id) << endl;
-
-  std::cout << to_string(state, state->epsilon_transitions) << std::endl;
-  std::cout << to_string(state, state->transitions) << std::endl;
-
-  // cout << "State (" << state->id << ") {" << endl;
-  // cout << "  end: " << (state->is_end ? "true" : "false") << endl;
-  // cout << "  ep: " << to_string(state->epsilon_tranisitions) << endl;
-  // cout << "  tr: " << to_string(state->transitions) << endl;
-  // cout << "}" << endl;
-
-  seen_states.push_back(state->id);
-
-  for (const auto &eps : state->epsilon_transitions) {
-    print(eps, seen_states);
-  }
-
-  for (const auto &kv : state->transitions) {
-    print(kv.second, seen_states);
-  }
+void print(const std::shared_ptr<State> &state) {
+  std::cout << state->to_string() << std::endl;
 }
 
 void print(const NFA &nfa) {
-  std::vector<int> seen_states;
-
   std::cout << "@startuml test" << std::endl
             << "hide empty description" << std::endl;
 
-  std::cout << "[*] --> State" << std::to_string(nfa.start->id) << std::endl;
+  std::cout << "[*] --> State" << std::to_string(nfa.start->id()) << std::endl;
 
-  print(nfa.start, seen_states);
+  print(nfa.start);
 
-  std::cout << "State" << std::to_string(global_id - 1) << " --> [*]"
+  std::cout << "State" << std::to_string(nfa.end->id()) << " --> [*]"
             << std::endl;
 
   std::cout << "@enduml" << std::endl;
-}
-
-std::shared_ptr<State> create_state(bool is_end) {
-  auto id = global_id;
-  global_id++;
-  return std::make_shared<State>(State{id, is_end, {}, {}});
-}
-
-void add_epsilon_transition(const std::shared_ptr<State> &from,
-                            const std::shared_ptr<State> &to) {
-  from->epsilon_transitions.push_back(to);
-}
-
-void add_transition(const std::shared_ptr<State> &from,
-                    const std::shared_ptr<State> &to, char symbol) {
-  from->transitions[symbol] = to;
 }
 
 NFA from_epsilon() {
   auto start = create_state(false);
   auto end = create_state(true);
 
-  add_epsilon_transition(start, end);
+  start->add_epsilon_transition(end);
   return NFA{start, end};
 }
 
@@ -134,28 +50,28 @@ NFA from_symbol(char symbol) {
   auto start = create_state(false);
   auto end = create_state(true);
 
-  add_transition(start, end, symbol);
+  start->add_transition(symbol, end);
   return NFA{start, end};
 }
 
 // ab : a and b
 NFA nfa_concat(const NFA &first, const NFA &second) {
-  add_epsilon_transition(first.end, second.start);
-  first.end->is_end = false;
+  first.end->add_epsilon_transition(second.start);
+  first.end->set_is_end(false);
   return NFA{first.start, second.end};
 }
 
 // a|b : a or b
 NFA nfa_union(const NFA &first, const NFA &second) {
   auto start = create_state(false);
-  add_epsilon_transition(start, first.start);
-  add_epsilon_transition(start, second.start);
+  start->add_epsilon_transition(first.start);
+  start->add_epsilon_transition(second.start);
 
   auto end = create_state(true);
-  add_epsilon_transition(first.end, end);
-  first.end->is_end = false;
-  add_epsilon_transition(second.end, end);
-  second.end->is_end = false;
+  first.end->add_epsilon_transition(end);
+  first.end->set_is_end(false);
+  second.end->add_epsilon_transition(end);
+  second.end->set_is_end(false);
 
   return NFA{start, end};
 }
@@ -165,12 +81,12 @@ NFA nfa_closure(const NFA &nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
 
-  add_epsilon_transition(start, end);
-  add_epsilon_transition(start, nfa.start);
+  start->add_epsilon_transition(end);
+  start->add_epsilon_transition(nfa.start);
 
-  add_epsilon_transition(nfa.end, end);
-  add_epsilon_transition(nfa.end, nfa.start);
-  nfa.end->is_end = false;
+  nfa.end->add_epsilon_transition(end);
+  nfa.end->add_epsilon_transition(nfa.start);
+  nfa.end->set_is_end(false);
 
   return NFA{start, end};
 }
@@ -181,16 +97,16 @@ NFA zero_or_one(const NFA &nfa) {
   auto end = create_state(true);
 
   // eps from start to end
-  add_epsilon_transition(start, end);
+  start->add_epsilon_transition(end);
 
   // eps from start to nfa.start
-  add_epsilon_transition(start, nfa.start);
+  start->add_epsilon_transition(nfa.start);
 
   // eps from nfa.end to end
-  add_epsilon_transition(nfa.end, end);
+  nfa.end->add_epsilon_transition(end);
 
   // set nfa.end.is_end to false
-  nfa.end->is_end = false;
+  nfa.end->set_is_end(false);
 
   return NFA{start, end};
 }
@@ -200,24 +116,24 @@ NFA one_or_more(const NFA &nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
 
-  assert(nfa.end->is_end);
+  assert(nfa.end->is_end());
 
   // eps from start to nfa.start
-  add_epsilon_transition(start, nfa.start);
+  start->add_epsilon_transition(nfa.start);
 
   // set nfa.end.is_end to false
-  nfa.end->is_end = false;
+  nfa.end->set_is_end(false);
 
   // eps from nfa.end to end
-  add_epsilon_transition(nfa.end, end);
+  nfa.end->add_epsilon_transition(end);
 
   // eps from end to nfa.start
-  add_epsilon_transition(nfa.end, nfa.start);
+  nfa.end->add_epsilon_transition(nfa.start);
 
   auto new_ = NFA{start, end};
 
-  assert(!new_.start->is_end);
-  assert(new_.end->is_end);
+  assert(!new_.start->is_end());
+  assert(new_.end->is_end());
   return new_;
 }
 
@@ -285,8 +201,8 @@ void add_next_state(const std::shared_ptr<State> &state,
 
   assert(state != nullptr);
 
-  if (!state->epsilon_transitions.empty()) {
-    for (const auto &st : state->epsilon_transitions) {
+  if (state->has_epsilon_transitions()) {
+    for (const auto &st : state->epsilon_transitions()) {
 
       assert(st != nullptr);
 
@@ -309,10 +225,10 @@ bool search(const NFA &nfa, const std::string &word) {
     std::vector<std::shared_ptr<State>> next_states;
 
     for (const auto &state : current_states) {
-      auto next_state = state->transitions[symbol];
+      auto next_state = state->transition(symbol);
 
-      if (next_state != nullptr) {
-        add_next_state(next_state, next_states, {});
+      if (next_state.has_value()) {
+        add_next_state(*next_state, next_states, {});
       }
     }
 
@@ -322,7 +238,7 @@ bool search(const NFA &nfa, const std::string &word) {
   return find_if(cbegin(current_states), cend(current_states),
                  [](const std::shared_ptr<State> &state) {
                    assert(state != nullptr);
-                   return state->is_end;
+                   return state->is_end();
                  }) != cend(current_states);
 }
 
