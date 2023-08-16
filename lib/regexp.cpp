@@ -28,11 +28,11 @@ struct NFA {
 };
 
 std::string
-to_string(std::shared_ptr<State> from_state,
+to_string(const std::shared_ptr<State> &from_state,
           const std::vector<std::shared_ptr<State>> &epsilon_tranisitions) {
   std::string out;
 
-  for (auto t : epsilon_tranisitions) {
+  for (const auto &t : epsilon_tranisitions) {
     out += "\n";
     out += ("State" + std::to_string(from_state->id));
     out += " -> ";
@@ -45,11 +45,11 @@ to_string(std::shared_ptr<State> from_state,
 }
 
 std::string
-to_string(std::shared_ptr<State> from_state,
+to_string(const std::shared_ptr<State> &from_state,
           const std::unordered_map<char, std::shared_ptr<State>> &transitions) {
   std::string out;
 
-  for (auto kv : transitions) {
+  for (const auto &kv : transitions) {
     out += "\n";
     out += ("State" + std::to_string(from_state->id));
     out += " -> ";
@@ -112,13 +112,13 @@ std::shared_ptr<State> create_state(bool is_end) {
   return std::make_shared<State>(State{id, is_end, {}, {}});
 }
 
-void add_epsilon_transition(std::shared_ptr<State> from,
-                            std::shared_ptr<State> to) {
+void add_epsilon_transition(const std::shared_ptr<State> &from,
+                            const std::shared_ptr<State> &to) {
   from->epsilon_transitions.push_back(to);
 }
 
-void add_transition(std::shared_ptr<State> from, std::shared_ptr<State> to,
-                    char symbol) {
+void add_transition(const std::shared_ptr<State> &from,
+                    const std::shared_ptr<State> &to, char symbol) {
   from->transitions[symbol] = to;
 }
 
@@ -139,14 +139,14 @@ NFA from_symbol(char symbol) {
 }
 
 // ab : a and b
-NFA nfa_concat(NFA first, NFA second) {
+NFA nfa_concat(const NFA &first, const NFA &second) {
   add_epsilon_transition(first.end, second.start);
   first.end->is_end = false;
   return NFA{first.start, second.end};
 }
 
 // a|b : a or b
-NFA nfa_union(NFA first, NFA second) {
+NFA nfa_union(const NFA &first, const NFA &second) {
   auto start = create_state(false);
   add_epsilon_transition(start, first.start);
   add_epsilon_transition(start, second.start);
@@ -161,7 +161,7 @@ NFA nfa_union(NFA first, NFA second) {
 }
 
 // a* : one or more
-NFA nfa_closure(NFA nfa) {
+NFA nfa_closure(const NFA &nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
 
@@ -176,7 +176,7 @@ NFA nfa_closure(NFA nfa) {
 }
 
 // a? : zero or one
-NFA zero_or_one(NFA nfa) {
+NFA zero_or_one(const NFA &nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
 
@@ -196,7 +196,7 @@ NFA zero_or_one(NFA nfa) {
 }
 
 // a+ : one or more
-NFA one_or_more(NFA nfa) {
+NFA one_or_more(const NFA &nfa) {
   auto start = create_state(false);
   auto end = create_state(true);
 
@@ -221,7 +221,7 @@ NFA one_or_more(NFA nfa) {
   return new_;
 }
 
-NFA to_nfa(std::string post_fix_expr) {
+NFA to_nfa(const std::string &post_fix_expr) {
   if (post_fix_expr.empty()) {
     return from_epsilon();
   }
@@ -286,7 +286,7 @@ void add_next_state(const std::shared_ptr<State> &state,
   assert(state != nullptr);
 
   if (!state->epsilon_transitions.empty()) {
-    for (auto st : state->epsilon_transitions) {
+    for (const auto &st : state->epsilon_transitions) {
 
       assert(st != nullptr);
 
