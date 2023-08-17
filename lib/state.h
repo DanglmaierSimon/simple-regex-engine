@@ -10,7 +10,7 @@
 class State final {
 public:
   virtual ~State() = default;
-  State(bool is_end);
+  explicit State(bool is_end);
 
   [[nodiscard]] int id() const;
 
